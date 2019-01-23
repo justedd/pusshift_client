@@ -92,14 +92,21 @@ class Fetcher
 end
 
 ap '*' * 30
-fetcher = Fetcher.new
-# time_range = TimeRange.exhaustive
-time_range = TimeRange.new(Time.new(2017, 1, 1), Time.new(2018, 1 ,1))
-
 gem_name = 'gon'
 
+fetcher = Fetcher.new
+# time_range = TimeRange.exhaustive
+
+time_range = TimeRange.new(Time.new(2017, 1, 1), Time.new(2018, 1 ,1))
 submissions = fetcher.submissions(gem_name, time_range)
 comments = fetcher.comments(gem_name, time_range)
+formatter1 = Formatter.new(submissions, comments)
+# ap formatter1
 
-# time_range = TimeRange.new(Time.new(2017, 1, 1), Time.new(2018, 1 ,1))
-ap Formatter.new(submissions, comments).to_h
+time_range = TimeRange.new(Time.new(2016, 1, 1), Time.new(2017, 1 ,1))
+submissions = fetcher.submissions(gem_name, time_range)
+comments = fetcher.comments(gem_name, time_range)
+formatter2 = Formatter.new(submissions, comments)
+# ap formatter2
+
+ap Formatter.aggregate(formatter1, formatter2).to_h

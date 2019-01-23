@@ -4,10 +4,17 @@
 class Formatter
   PREFIX = 'reddit_'
   FIELDS = %w[submissions comments submissioners commenters comment_scores
-              submission_comment_numbers submission_scores].freeze
+              submission_comment_numbers submission_scores users].freeze
 
-  def self.aggregate(_formatters)
-    # sum other, to get average
+  attr_accessor(*FIELDS)
+
+  def self.aggregate(*formatters)
+    new([], []).tap do |aggregator|
+      FIELDS.each do |field|
+        values = formatters.reduce { |formatter| formatter.send(field) }
+        aggregator.send("#{field}=", values)
+      end
+    end
   end
 
   def initialize(submissions, comments)
@@ -20,6 +27,8 @@ class Formatter
     @commenters = Set.new
     @comments = []
     @comment_scores = []
+
+    @users = Set.new
 
     parse_data(submissions, comments)
   end
@@ -35,6 +44,7 @@ class Formatter
   def parse_data(submissions, comments)
     parse_submissions(submissions)
     parse_comments(comments)
+    @users = @submissioners + @commenters
   end
 
   def parse_submissions(data)
@@ -53,9 +63,4 @@ class Formatter
       @comment_scores << hash['score']
     end
   end
-
-  protected
-
-  attr_accessor :submissions, :comments, :submissioners, :commenters,
-                :submission_comment_numbers, :submission_scores, :comment_scores
 end
