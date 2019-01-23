@@ -12,8 +12,9 @@ require './query_builder'
 # Fetch data
 class Fetcher
   BASE_URI = 'https://api.pushshift.io'
-  # maximum amount of items possible for single response
+  # maximum amount of items possible for a single response
   RESPONSE_LIMIT = 1000
+  REQUST_LIMIT_PER_MINUTE = 180
   SUBREDDITS = %w[ruby rails learn_ruby].freeze
   COMMENT_FIELDS = %w[id created_utc score author link_id].freeze
   SUBMISSION_FIELDS = %w[title name id created_utc score author
@@ -78,17 +79,22 @@ class Fetcher
   end
 
   def fetch_json(query)
-    # TODO: ensure rate-limits
+    ensure_rate_limits
     response = @connection.get(*query.to_faraday_param_list)
     Oj.load(response.body)['data']
+  end
+
+  # just keep average pace
+  def ensure_rate_limits
+    sleep 1 / REQUST_LIMIT_PER_MINUTE.to_f
   end
 end
 
 fetcher = Fetcher.new
-time_range = TimeRange.new(Time.new(2017, 1, 1), Time.new(2018, 1, 1))
-# time_range = TimeRange.exhaustive
+# time_range = TimeRange.new(Time.new(2017, 1, 1), Time.new(2018, 1, 1))
+time_range = TimeRange.exhaustive
 
-submissions = fetcher.submissions('rubocop', time_range)
+submissions = fetcher.submissions('devise', time_range)
 submission_ids = submissions.map { |submission| submission['id'] }
 
 # ap gon_submissions
@@ -96,5 +102,9 @@ submission_ids = submissions.map { |submission| submission['id'] }
 ap submissions.length
 ap submissions.first
 ap fetcher.submission_comments(submission_ids.first, time_range).length
+
+# submission_ids.each do |id|
+  # ap fetcher.submission_comments(id, time_range).length
+# end
 
 # ap fetcher.submission_comments(gon_submission_ids, time_range)
