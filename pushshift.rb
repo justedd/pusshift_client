@@ -8,6 +8,7 @@ require 'forwardable'
 
 require './time_range'
 require './query_builder'
+require './formatter'
 
 # Fetch data
 class Fetcher
@@ -90,21 +91,15 @@ class Fetcher
   end
 end
 
+ap '*' * 30
 fetcher = Fetcher.new
-# time_range = TimeRange.new(Time.new(2017, 1, 1), Time.new(2018, 1, 1))
-time_range = TimeRange.exhaustive
+# time_range = TimeRange.exhaustive
+time_range = TimeRange.new(Time.new(2017, 1, 1), Time.new(2018, 1 ,1))
 
-submissions = fetcher.submissions('devise', time_range)
-submission_ids = submissions.map { |submission| submission['id'] }
+gem_name = 'gon'
 
-# ap gon_submissions
+submissions = fetcher.submissions(gem_name, time_range)
+comments = fetcher.comments(gem_name, time_range)
 
-ap submissions.length
-ap submissions.first
-ap fetcher.submission_comments(submission_ids.first, time_range).length
-
-# submission_ids.each do |id|
-  # ap fetcher.submission_comments(id, time_range).length
-# end
-
-# ap fetcher.submission_comments(gon_submission_ids, time_range)
+# time_range = TimeRange.new(Time.new(2017, 1, 1), Time.new(2018, 1 ,1))
+ap Formatter.new(submissions, comments).to_h
